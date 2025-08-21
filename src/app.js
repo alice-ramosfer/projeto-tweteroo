@@ -121,6 +121,40 @@ app.get("/tweets", async (req, res) =>{
   }
 });
 
+app.put("/tweets/:id", async (req, res) =>{
+    const {id} = req.params;
+    const tweeter = req.body;
+
+    const validate =  validateUser(tweeter)
+    if (validate){
+        return res.status(422).send(validate);
+    }
+
+    const userExistente = await userExists(tweeter);
+    if (userExistente){
+        return res.sendStatus(userExistente);
+    }
+
+    try{
+       const ExisteId = await db.collection("tweets").find({_id: new ObjectId(id)})
+       if (!ExisteId){
+            return res.sendStatus(404);
+       }
+        
+    }catch(err){
+        return res.sendStatus(500);
+    }
+    
+    try{
+        await db.collection("tweets").updateOne({_id: new ObjectId(id)},{
+            $set:{tweet:tweeter.tweet}
+        })
+        return res.sendStatus(204);
+    }catch(err){
+        return res.sendStatus(500);
+    }
+});
+
 const port = process.env.PORT;
 app.listen(port, ()=>{
     console.log(`Servidor rodando na porta ${port}`)
