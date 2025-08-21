@@ -97,6 +97,29 @@ app.post("/tweets", async (req, res) =>{
     }
 });
 
+app.get("/tweets", async (req, res) =>{
+   try {
+    const tweetsPromise = db.collection("tweets").find().toArray();
+    const usersPromise = db.collection("users").find().toArray();
+    const [tweets, users] = await Promise.all([tweetsPromise, usersPromise]);
+
+     const result = tweets.map(tw => {
+      const user = users.find(us => us.username === tw.username);
+      return {
+        _id: tw._id,
+        username: tw.username,
+        avatar: user ? user.avatar : null, // avatar do usuário
+        tweet: tw.tweet
+      };
+    });
+
+    return res.send(result.slice().reverse());
+
+  } catch (err) {
+    console.error("Erro ao buscar tweets:", err);
+    return res.sendStatus(500);
+  }
+});
 
 const port = process.env.PORT;
 app.listen(port, ()=>{
