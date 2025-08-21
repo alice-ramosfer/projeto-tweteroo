@@ -155,6 +155,30 @@ app.put("/tweets/:id", async (req, res) =>{
     }
 });
 
+app.delete("/tweets/:id", async (req, res) =>{
+    const {id}=req.params;
+    
+    try{
+       const ExisteId = await db.collection("tweets").find({_id: new ObjectId(id)})
+       if (!ExisteId){
+            return res.sendStatus(404);
+       }
+        
+    }catch(err){
+        return res.sendStatus(500);
+    }
+
+    try {
+        await db.collection('tweets').deleteOne({ _id: new ObjectId(id) })
+
+        res.sendStatus(204);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+
+});
+
 const port = process.env.PORT;
 app.listen(port, ()=>{
     console.log(`Servidor rodando na porta ${port}`)
